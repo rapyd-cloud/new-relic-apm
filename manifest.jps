@@ -100,7 +100,7 @@ actions:
       PHPZTS=$(php -i | grep "\-\-enable\-zts" -q; if [ $? -eq 0 ]; then echo "-zts"; fi);
       NEWRELICVER="newrelic-php5";
       if (( $(echo "$PHPVER 8.2" | awk '{print ($1 < $2)}') )); then if [ ! -z "$PHPZTS" ]; then NEWRELICVER="newrelic-php5-9.19.0.309-1"; fi; fi; 
-      if [ "$NEWRELICVER" == "newrelic-php5"]; then yum update --nogpgcheck -y newrelic-php5 >> /var/log/newrelic.log 2>&1; else yum --nogpgcheck -y install $NEWRELICVER >> /var/log/newrelic.log 2>&1; fi
+      if [ "$NEWRELICVER" == "newrelic-php5" ]; then yum update --nogpgcheck -y newrelic-php5 >> /var/log/newrelic.log 2>&1; else yum --nogpgcheck -y install $NEWRELICVER >> /var/log/newrelic.log 2>&1; fi
       newrelic_pid=$(pidof -s newrelic-daemon);
       [[ ! -z $newrelic_pid ]] && killall -9 newrelic-daemon || echo "newrelic-daemon is absent";
     user: root
@@ -127,9 +127,8 @@ actions:
         if [ -z "$(rpm -qa | grep newrelic-repo-5-3)" ]; then rpm -Uvh http://yum.newrelic.com/pub/newrelic/el5/i386/newrelic-repo-5-3.noarch.rpm >> /var/log/newrelic.log 2>&1; fi
         if [ -z "$(rpm -qa | grep newrelic-php5)" ]; then yum --nogpgcheck -y install $NEWRELICVER >> /var/log/newrelic.log 2>&1; fi
         NRBASEDIR=/usr/lib/newrelic-php5; export NRBASEDIR
-        MODULEDIR=/usr/lib64/php/modules;
-        [ ! -d $MODULEDIR ] && MODULEDIR="/usr/local/lsws/lsphp/lib64/php/modules/";
-        PHPINIDIR="/etc/php.d/"
+        MODULEDIR=$(php -i | grep "^extension_dir" | awk '{print $3}')
+        PHPINIDIR=$(php -i | grep "Scan this dir for additional .ini files" | sed 's/.*=> //')
         [ ! -d $PHPINIDIR ] && PHPINIDIR="/usr/local/lsws/lsphp/etc/php.d/"
         export MODULEDIR
         ARCH=x64; export ARCH
